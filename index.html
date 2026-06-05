@@ -612,8 +612,8 @@ Use <strong>"Refazer Notas"</strong> para corrigir votos já enviados.
 <!-- PÁGINA 1: EQUIPE A -->
 <div id="sp-bloco-a"></div>
 
-<!-- PÁGINA 2: EQUIPE B (nova página) -->
-<div style="page-break-before:always;">
+<!-- EQUIPE B (mesma página) -->
+<div>
 <div id="sp-header-b" style="margin-bottom:4px;"></div>
 <div id="sp-bloco-b"></div>
 </div>
@@ -650,18 +650,6 @@ Use <strong>"Refazer Notas"</strong> para corrigir votos já enviados.
 <div style="border-bottom:1px solid #ccc;height:32px;"></div>
 <div style="border-bottom:1px solid #ccc;height:32px;"></div>
 <div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
 <div style="height:32px;"></div>
 </div>
 <div style="display:flex;justify-content:center;margin-top:50px;">
@@ -671,8 +659,8 @@ Use <strong>"Refazer Notas"</strong> para corrigir votos já enviados.
 </div>
 </div>
 
-<!-- PÁGINA 4: RELATÓRIO DO DELEGADO -->
-<div style="page-break-before:always;padding:12px;">
+<!-- RELATÓRIO DO DELEGADO (mesmo verso) -->
+<div style="margin-top:16px;">
 <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
 <tr>
 <td style="width:60px;"><div style="width:50px;height:50px;border:2px solid #1a6b2f;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://www.primeirodemaio.com.br/imagens/logo.png" style="width:44px;" onerror="this.parentElement.innerHTML='PMFC'"/></div></td>
@@ -692,18 +680,6 @@ Use <strong>"Refazer Notas"</strong> para corrigir votos já enviados.
 </table>
 <div style="border:1px solid #000;">
 <div style="text-align:center;font-weight:bold;font-size:11px;padding:5px;border-bottom:1px solid #000;">Relatório do Delegado</div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
-<div style="border-bottom:1px solid #ccc;height:32px;"></div>
 <div style="border-bottom:1px solid #ccc;height:32px;"></div>
 <div style="border-bottom:1px solid #ccc;height:32px;"></div>
 <div style="border-bottom:1px solid #ccc;height:32px;"></div>
@@ -2055,11 +2031,11 @@ async function preencherAtletas(){}// placeholder
 function blocoEquipe(equipeNome, atletasPrincipal, atletasVet, lado){
 const l=lado===0?'A':'B';
 
-// Garante mínimo de linhas (11 principal + 9 veteranos)
+// Garante mínimo de linhas (10 principal + 7 veteranos)
 const pRows=[...(atletasPrincipal||[])];
-while(pRows.length<11)pRows.push({});
+while(pRows.length<10)pRows.push({});
 const vRows=[...(atletasVet||[])];
-while(vRows.length<9)vRows.push({});
+while(vRows.length<7)vRows.push({});
 
 // Função auxiliar: linha de atleta
 const makeRow=a=>{
@@ -2070,20 +2046,20 @@ if(exStr){
 const parts=exStr.split('/');
 if(parts.length===3){const d=new Date(+parts[2],+parts[1]-1,+parts[0]);if(d<new Date())exColor='#c0392b';}
 }
-return '<tr style="height:20px;">'
-+'<td style="border:1px solid #ccc;padding:2px 3px;font-size:9px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
-+'<td style="border:1px solid #ccc;padding:2px 3px;font-size:9px;">'+(a.name||'').toUpperCase()+'</td>'
-+'<td style="border:1px solid #ccc;padding:2px 3px;font-size:9px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:18px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:30px;"></td>'
+return '<tr style="height:16px;">'
++'<td style="border:1px solid #ccc;padding:1px 3px;font-size:8.5px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
++'<td style="border:1px solid #ccc;padding:1px 3px;font-size:8.5px;">'+(a.name||'').toUpperCase()+'</td>'
++'<td style="border:1px solid #ccc;padding:1px 3px;font-size:8.5px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
++'<td style="border:1px solid #ccc;padding:1px;width:18px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:30px;"></td>'
 +'</tr>';
 };
 
@@ -2174,14 +2150,48 @@ atletasA=[...membA.filter(a=>a.isGk),...membA.filter(a=>!a.isGk)];
 atletasB=[...membB.filter(a=>a.isGk),...membB.filter(a=>!a.isGk)];
 }
 
-// Busca atletas AJUDA veterano (sorteio da categoria veterano, mesmo nome de time)
-const catAjuda={principal:'veterano',veterano:'master',master:'senior',senior:'master'}[cat]||'veterano';
-const drawVet=await fbGet('drawResults',catAjuda).catch(()=>null);
+// Busca atletas AJUDA conforme regulamento:
+// Principal → veteranos do mesmo time (todos)
+// Veterano  → principais do mesmo time com nota 4-7
+// Master    → sêniors do mesmo time nota ≤ 7
+// Sênior    → masters do mesmo time nota ≤ 7
+const catAjuda={principal:'veterano',veterano:'principal',master:'senior',senior:'master'}[cat]||'veterano';
+const drawAjuda=await fbGet('drawResults',catAjuda).catch(()=>null);
 let vetA=[],vetB=[];
-if(drawVet&&drawVet.teams){
-const teamsVet=JSON.parse(drawVet.teams);
-vetA=(teamsVet[equipeA]||[]).filter(a=>!a.isGk);
-vetB=(teamsVet[equipeB]||[]).filter(a=>!a.isGk);
+if(drawAjuda&&drawAjuda.teams){
+const teamsAjuda=JSON.parse(drawAjuda.teams);
+const findTeam2=(teams,name)=>{
+if(teams[name]) return teams[name];
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
+const n=norm(name);
+for(const [k,v] of Object.entries(teams)){if(norm(k)===n) return v;}
+for(const [k,v] of Object.entries(teams)){if(norm(k).includes(n.slice(0,6))||n.includes(norm(k).slice(0,6))) return v;}
+return [];
+};
+let rawA=findTeam2(teamsAjuda,equipeA);
+let rawB=findTeam2(teamsAjuda,equipeB);
+
+// Para veterano: apenas principais com nota 4-7 (conforme regulamento Art. 15)
+if(cat==='veterano'){
+const inRange=a=>{const ov=parseFloat(a.overall)||0; return ov>=4&&ov<=7;};
+rawA=rawA.filter(inRange);
+rawB=rawB.filter(inRange);
+}
+// Para master/sênior: nota ≤ 7
+if(cat==='master'||cat==='senior'){
+rawA=rawA.filter(a=>(parseFloat(a.overall)||0)<=7);
+rawB=rawB.filter(a=>(parseFloat(a.overall)||0)<=7);
+}
+vetA=rawA.filter(a=>!a.isGk);
+vetB=rawB.filter(a=>!a.isGk);
+}
+// Fallback: busca no S.athletes se o sorteio auxiliar não existir
+if(!vetA.length||!vetB.length){
+const ajudaAths=S.athletes.filter(a=>a.category===catAjuda);
+const inRangeVet=cat==='veterano'?a=>{const ov=parseFloat(a.overall)||0;return ov>=4&&ov<=7;}:
+(cat==='master'||cat==='senior')?a=>(parseFloat(a.overall)||0)<=7:()=>true;
+// Sem sorteio: não há como saber o time do atleta auxiliar → deixa vazio
+// (admin preenche manualmente)
 }
 
 // Fallback: busca por categoria/equipe no firebase se não tiver sorteio
@@ -2236,12 +2246,14 @@ janela.document.write(`<!DOCTYPE html><html><head>
 <title>Súmula – PMFC 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff;}
-@page{size:A4;margin:10mm;}
+body{font-family:Arial,sans-serif;font-size:10px;color:#000;background:#fff;}
+@page{size:A4 portrait;margin:7mm;}
 @media print{
 .no-print{display:none!important;}
 body{margin:0;}
+tr{page-break-inside:avoid;}
 }
+table{border-collapse:collapse;}
 </style>
 </head><body>${conteudo}</body></html>`);
 janela.document.close();
