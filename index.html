@@ -775,10 +775,15 @@ function fbListen(col,cb){
   });
 }
 async function loadFromFB(){
-const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo de conexão esgotado. Verifique sua internet e tente novamente.')),15000));
+try{
+const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),12000));
 const load=Promise.all([fbGetAll('athletes'),fbGetAll('voteLog'),fbGetAll('representatives'),fbGet('config','deadline')]);
 const [aths,votes,reps,dl]=await Promise.race([load,timeout]);
 S.athletes=aths;S.voteLog=votes;S.representatives=reps;S.deadline=dl||{start:null,end:null};
+}catch(e){
+console.warn('Firebase data load parcial:',e.message);
+// Continua com dados vazios — admin ainda consegue entrar
+}
 }
 function startListeners(){
 fbListen('athletes',d=>{S.athletes=d;refreshScreens();});
@@ -2306,15 +2311,26 @@ return '<div class="card" style="margin-bottom:16px;">'
 }
 
 (async()=>{
+const loadingEl=document.getElementById('loading');
+const loginEl=document.getElementById('scr-login');
+
+// Passo 1: aguardar SDK Firebase (quase instantâneo)
 try{
 await waitFB();
-await loadFromFB();
-document.getElementById('loading').style.display='none';
-document.getElementById('scr-login').style.display='flex';
-updateRepTeams();
 }catch(e){
-document.getElementById('loading').innerHTML='<div style="text-align:center;padding:20px;color:#fff;"><div style="font-size:2rem;">⚠️</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;color:var(--gold);margin:8px 0;letter-spacing:2px;">Erro de Conexão</div><div style="font-size:.85rem;color:rgba(255,255,255,.8);">'+e.message+'</div><button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;background:var(--gold);color:#111;border:none;border-radius:8px;font-family:\'Bebas Neue\',sans-serif;font-size:1rem;cursor:pointer;">↺ Tentar Novamente</button></div>';
+loadingEl.innerHTML='<div style="text-align:center;padding:20px;color:#fff;"><div style="font-size:2rem;">⚠️</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;color:var(--gold);margin:8px 0;letter-spacing:2px;">Erro de Conexão</div><div style="font-size:.85rem;color:rgba(255,255,255,.8);">'+e.message+'</div><button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;background:var(--gold);color:#111;border:none;border-radius:8px;font-family:\'Bebas Neue\',sans-serif;font-size:1rem;cursor:pointer;">↺ Tentar Novamente</button></div>';
+return;
 }
+
+// Passo 2: mostra login imediatamente — não bloqueia esperando dados
+loadingEl.style.display='none';
+loginEl.style.display='flex';
+updateRepTeams();
+
+// Passo 3: carrega dados em segundo plano (sem bloquear a UI)
+loadFromFB().then(()=>{
+if(S.user)refreshScreens(); // atualiza se já estiver logado
+}).catch(()=>{});
 })();
 </script>
 </body>
