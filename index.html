@@ -636,15 +636,48 @@ Use <strong>"Refazer Notas"</strong> para corrigir votos já enviados.
 </table>
 
 <!-- Relatório Árbitro -->
-<div style="border:1px solid #000;margin-bottom:12px;">
-<div style="text-align:center;font-weight:bold;font-size:11px;padding:4px;border-bottom:1px solid #000;">Relatório do Árbitro</div>
-${Array(18).fill('<div style="border-bottom:1px solid #ddd;height:20px;"></div>').join('')}
+<div style="border:1px solid #000;margin-bottom:16px;">
+<div style="text-align:center;font-weight:bold;font-size:11px;padding:5px;border-bottom:1px solid #000;">Relatório do Árbitro</div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="height:28px;"></div>
 </div>
 
 <!-- Relatório Delegado -->
-<div style="border:1px solid #000;margin-bottom:20px;">
-<div style="text-align:center;font-weight:bold;font-size:11px;padding:4px;border-bottom:1px solid #000;">Relatório do Delegado</div>
-${Array(12).fill('<div style="border-bottom:1px solid #ddd;height:20px;"></div>').join('')}
+<div style="border:1px solid #000;margin-bottom:24px;">
+<div style="text-align:center;font-weight:bold;font-size:11px;padding:5px;border-bottom:1px solid #000;">Relatório do Delegado</div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="border-bottom:1px solid #ccc;height:28px;"></div>
+<div style="height:28px;"></div>
 </div>
 
 <!-- Assinaturas -->
@@ -2004,20 +2037,20 @@ if(exStr){
 const parts=exStr.split('/');
 if(parts.length===3){const d=new Date(+parts[2],+parts[1]-1,+parts[0]);if(d<new Date())exColor='#c0392b';}
 }
-return '<tr>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;">'+(a.name||'').toUpperCase()+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:18px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:30px;"></td>'
+return '<tr style="height:20px;">'
++'<td style="border:1px solid #ccc;padding:2px 3px;font-size:9px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
++'<td style="border:1px solid #ccc;padding:2px 3px;font-size:9px;">'+(a.name||'').toUpperCase()+'</td>'
++'<td style="border:1px solid #ccc;padding:2px 3px;font-size:9px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
++'<td style="border:1px solid #ccc;padding:2px;width:18px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:2px;width:30px;"></td>'
 +'</tr>';
 };
 
@@ -2028,7 +2061,7 @@ const bodyHTML=pRows.map(makeRow).join('')+sepVet+vRows.map(makeRow).join('');
 const golsHTML=Array.from({length:9},(_,i)=>
 '<tr>'
 +'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;text-align:center;width:12px;">'+(i*2+1)+'</td>'
-+'<td style="border:1px solid #ccc;height:14px;"></td>'
++'<td style="border:1px solid #ccc;height:18px;"></td>'
 +'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;text-align:center;width:12px;">'+(i*2+2)+'</td>'
 +'<td style="border:1px solid #ccc;"></td>'
 +'</tr>'
@@ -2093,8 +2126,18 @@ const drawData=await fbGet('drawResults',cat);
 let atletasA=[],atletasB=[];
 if(drawData){
 const teams=JSON.parse(drawData.teams);
-const membA=teams[equipeA]||[];
-const membB=teams[equipeB]||[];
+// Busca case-insensitive e com normalização de nome
+const findTeam=(teams,name)=>{
+if(teams[name]) return teams[name];
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
+const n=norm(name);
+for(const [k,v] of Object.entries(teams)){if(norm(k)===n) return v;}
+// Busca parcial (ex: "PANTERA IMOVEIS" vs "Panteras Imóveis")
+for(const [k,v] of Object.entries(teams)){if(norm(k).includes(n.slice(0,6))||n.includes(norm(k).slice(0,6))) return v;}
+return [];
+};
+const membA=findTeam(teams,equipeA);
+const membB=findTeam(teams,equipeB);
 atletasA=[...membA.filter(a=>a.isGk),...membA.filter(a=>!a.isGk)];
 atletasB=[...membB.filter(a=>a.isGk),...membB.filter(a=>!a.isGk)];
 }
