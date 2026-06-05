@@ -1977,78 +1977,91 @@ selB.innerHTML=times.map((t,i)=>'<option value="'+t+'" '+(i===1?'selected':'')+'
 
 async function preencherAtletas(){}// placeholder
 
-function blocoEquipe(equipeNome, atletas, gol, lado){
-const letras=['A','B'];
+function blocoEquipe(equipeNome, atletasPrincipal, atletasVet, lado){
 const l=lado===0?'A':'B';
 
-// Construir tabela de atletas
-const linhaAtletas=atletas.map(a=>
+// Garante mínimo de linhas (11 principal + 9 veteranos)
+const pRows=[...(atletasPrincipal||[])];
+while(pRows.length<11)pRows.push({});
+const vRows=[...(atletasVet||[])];
+while(vRows.length<9)vRows.push({});
+
+// Função auxiliar: linha de atleta
+const makeRow=a=>{
+const exStr=a.exame||'';
+// Detecta exame vencido (data no passado) — mostra em vermelho
+let exColor='inherit';
+if(exStr){
+const parts=exStr.split('/');
+if(parts.length===3){const d=new Date(+parts[2],+parts[1]-1,+parts[0]);if(d<new Date())exColor='#c0392b';}
+}
+return '<tr>'
++'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
++'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;">'+(a.name||'').toUpperCase()+'</td>'
++'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
++'<td style="border:1px solid #ccc;padding:1px;width:18px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:13px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:1px;width:30px;"></td>'
++'</tr>';
+};
+
+const sepVet='<tr><td colspan="13" style="text-align:center;font-size:8px;background:#f0f0f0;padding:2px;border:1px solid #ccc;font-weight:bold;letter-spacing:1px;">AJUDA veterano</td></tr>';
+const bodyHTML=pRows.map(makeRow).join('')+sepVet+vRows.map(makeRow).join('');
+
+// Painel de gols: 9 linhas com pares (1-2, 3-4 … 17-18)
+const golsHTML=Array.from({length:9},(_,i)=>
 '<tr>'
-+'<td style="border:1px solid #ccc;padding:2px 4px;font-size:10px;white-space:nowrap;">'+(a.matricula||'–')+'</td>'
-+'<td style="border:1px solid #ccc;padding:2px 4px;font-size:10px;">'+(a.name||'').toUpperCase()+'</td>'
-+'<td style="border:1px solid #ccc;padding:2px 4px;font-size:9px;text-align:center;">'+(a.exame||'')+'</td>'
-+'<td style="border:1px solid #ccc;padding:2px 4px;width:18px;"></td>'
-// Faltas individuais (6 colunas)
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:14px;"></td>'
-// Amarelo, Vermelho, Acumulativas, Saída
-+'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:30px;"></td>'
-+'<td style="border:1px solid #ccc;padding:2px;width:22px;"></td>'
++'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;text-align:center;width:12px;">'+(i*2+1)+'</td>'
++'<td style="border:1px solid #ccc;height:14px;"></td>'
++'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;text-align:center;width:12px;">'+(i*2+2)+'</td>'
++'<td style="border:1px solid #ccc;"></td>'
 +'</tr>'
 ).join('');
 
-// Gols (18 numerados)
-const golsHtml=Array.from({length:9},(_,i)=>
-'<tr>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;text-align:center;">'+(i*2+1)+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:60px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:9px;text-align:center;">'+(i*2+2)+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:60px;"></td>'
-+'</tr>'
-).join('');
-
-return '<div style="border:1px solid #000;margin:8px;padding:6px;">'
-// Header equipe
-+'<table style="width:100%;border-collapse:collapse;margin-bottom:4px;">'
+return '<div style="border:1px solid #000;margin:4px 0;font-size:10px;">'
+// ── Cabeçalho da equipe
++'<table style="width:100%;border-collapse:collapse;border-bottom:1px solid #000;">'
 +'<tr>'
-+'<td style="font-weight:bold;font-size:11px;">Equipe '+l+'</td>'
-+'<td style="font-weight:bold;font-size:12px;text-align:center;color:#1a6b2f;">'+equipeNome+'</td>'
-+'<td style="font-weight:bold;font-size:11px;text-align:right;">Saída</td>'
++'<td style="padding:2px 5px;font-weight:bold;font-size:10px;white-space:nowrap;">Equipe '+l+'</td>'
++'<td style="padding:2px 5px;font-weight:bold;font-size:11px;text-align:center;">'+equipeNome+'</td>'
++'<td style="padding:2px 5px;font-weight:bold;font-size:10px;text-align:right;width:65px;">Saída</td>'
 +'</tr></table>'
-// Tabela atletas
+// ── Flex: tabela atletas (esquerda) + painel gols (direita)
++'<div style="display:flex;">'
+// Tabela de atletas
++'<div style="flex:1;overflow:hidden;">'
 +'<table style="width:100%;border-collapse:collapse;">'
-+'<thead><tr style="background:#e8e8e8;">'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;width:50px;">Matr.</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;">Atleta</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;width:65px;">Exame</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;width:18px;">Nº</th>'
-+'<th colspan="6" style="border:1px solid #ccc;padding:2px 4px;font-size:9px;text-align:center;">Faltas Individuais</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;text-align:center;">Amarelo</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;text-align:center;">Vermelho</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;text-align:center;">Acumulativas</th>'
-+'<th style="border:1px solid #ccc;padding:2px 4px;font-size:9px;text-align:center;">Saída</th>'
++'<thead><tr style="background:#efefef;">'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;white-space:nowrap;">Matr.</th>'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;">Atleta</th>'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;width:58px;">Exame</th>'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;width:16px;">Nº</th>'
++'<th colspan="6" style="border:1px solid #ccc;padding:2px 3px;font-size:8px;text-align:center;">Faltas Individuais</th>'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;text-align:center;">Amarelo</th>'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;text-align:center;">Vermelho</th>'
++'<th style="border:1px solid #ccc;padding:2px 3px;font-size:8px;text-align:center;">Acumulativas</th>'
 +'</tr></thead>'
-+'<tbody>'+linhaAtletas+'</tbody>'
++'<tbody>'+bodyHTML+'</tbody>'
 +'</table>'
-// Seção gols + pedidos de tempo
-+'<div style="display:flex;gap:8px;margin-top:6px;">'
-// Gols
-+'<div style="flex:1;">'
-+'<div style="font-weight:bold;font-size:9px;text-align:center;border:1px solid #ccc;padding:2px;background:#e8e8e8;">Gols</div>'
-+'<table style="width:100%;border-collapse:collapse;">'+golsHtml+'</table>'
 +'</div>'
-// Pedidos de tempo
-+'<div style="width:100px;">'
-+'<div style="font-weight:bold;font-size:9px;text-align:center;border:1px solid #ccc;padding:2px;background:#e8e8e8;">Pedidos de Tempo</div>'
-+'<div style="border:1px solid #ccc;padding:2px;font-size:9px;">1º Per.</div><div style="border:1px solid #ccc;height:18px;"></div>'
-+'<div style="border:1px solid #ccc;padding:2px;font-size:9px;">2º Per.</div><div style="border:1px solid #ccc;height:18px;"></div>'
-+'<div style="border:1px solid #ccc;padding:2px;font-size:9px;">Extra</div><div style="border:1px solid #ccc;height:18px;"></div>'
+// Painel Gols + Pedidos de Tempo (direita)
++'<div style="width:65px;border-left:1px solid #000;flex-shrink:0;display:flex;flex-direction:column;">'
++'<div style="font-size:8px;font-weight:bold;text-align:center;padding:2px;border-bottom:1px solid #ccc;background:#efefef;">Gols</div>'
++'<table style="width:100%;border-collapse:collapse;flex:1;">'+golsHTML+'</table>'
++'<div style="font-size:7px;font-weight:bold;text-align:center;padding:2px;border-top:1px solid #000;border-bottom:1px solid #ccc;background:#efefef;white-space:nowrap;">Pedidos de Tempo</div>'
++'<div style="font-size:8px;padding:2px;border-bottom:1px solid #ccc;">1º Per.</div>'
++'<div style="height:16px;border-bottom:1px solid #ccc;"></div>'
++'<div style="font-size:8px;padding:2px;border-bottom:1px solid #ccc;">2º Per.</div>'
++'<div style="height:16px;border-bottom:1px solid #ccc;"></div>'
++'<div style="font-size:8px;padding:2px;border-bottom:1px solid #ccc;">Extra</div>'
++'<div style="height:16px;"></div>'
 +'</div>'
 +'</div>'
 +'</div>';
@@ -2069,37 +2082,35 @@ const fase=document.getElementById('sum-fase').value;
 
 if(equipeA===equipeB){showModal('Erro','Selecione equipes diferentes.');return;}
 
-// Busca atletas do sorteio confirmado
+// Busca atletas do sorteio confirmado (principal)
 const drawData=await fbGet('drawResults',cat);
 let atletasA=[],atletasB=[];
-
 if(drawData){
 const teams=JSON.parse(drawData.teams);
 const membA=teams[equipeA]||[];
 const membB=teams[equipeB]||[];
-// Linha + goleiro, 12 linhas no total
 atletasA=[...membA.filter(a=>a.isGk),...membA.filter(a=>!a.isGk)];
 atletasB=[...membB.filter(a=>a.isGk),...membB.filter(a=>!a.isGk)];
 }
 
-// Se não tiver sorteio usa atletas do firebase por categoria/equipe
-if(!atletasA.length){
-atletasA=S.athletes.filter(a=>a.category===cat&&(a.team||'').toLowerCase()===equipeA.toLowerCase()).slice(0,12);
-}
-if(!atletasB.length){
-atletasB=S.athletes.filter(a=>a.category===cat&&(a.team||'').toLowerCase()===equipeB.toLowerCase()).slice(0,12);
+// Busca atletas AJUDA veterano (sorteio da categoria veterano, mesmo nome de time)
+const catAjuda={principal:'veterano',veterano:'master',master:'senior',senior:'master'}[cat]||'veterano';
+const drawVet=await fbGet('drawResults',catAjuda).catch(()=>null);
+let vetA=[],vetB=[];
+if(drawVet&&drawVet.teams){
+const teamsVet=JSON.parse(drawVet.teams);
+vetA=(teamsVet[equipeA]||[]).filter(a=>!a.isGk);
+vetB=(teamsVet[equipeB]||[]).filter(a=>!a.isGk);
 }
 
-// Garante 12 linhas em cada equipe (preenche com linhas vazias)
-while(atletasA.length<12)atletasA.push({matricula:'',name:'',exame:''});
-while(atletasB.length<12)atletasB.push({matricula:'',name:'',exame:''});
+// Fallback: busca por categoria/equipe no firebase se não tiver sorteio
+if(!atletasA.length) atletasA=S.athletes.filter(a=>a.category===cat&&(a.team||'').toLowerCase()===equipeA.toLowerCase()).slice(0,12);
+if(!atletasB.length) atletasB=S.athletes.filter(a=>a.category===cat&&(a.team||'').toLowerCase()===equipeB.toLowerCase()).slice(0,12);
 
-// Formata data
+// Preenche cabeçalho da súmula
 const dataFmt=data?new Date(data+'T12:00:00').toLocaleDateString('pt-BR'):'';
 const confronto=equipeA+' x '+equipeB;
 const competicao='Campeonato Interno '+fase+' 2026';
-
-// Preenche campos do cabeçalho
 document.getElementById('sp-competicao').textContent=competicao;
 document.getElementById('sp-cat').textContent=CLBL_SHORT[cat];
 document.getElementById('sp-confronto').textContent=confronto;
@@ -2112,13 +2123,12 @@ document.getElementById('sp-anotador').textContent=anotador;
 document.getElementById('sp-delegado').textContent=delegado;
 document.getElementById('sp-equipe-a-nome').textContent=equipeA;
 document.getElementById('sp-equipe-b-nome').textContent=equipeB;
-// Página 2
 document.getElementById('sp-comp2').textContent=competicao;
 document.getElementById('sp-conf2').textContent=confronto;
 
-// Blocos das equipes
-document.getElementById('sp-bloco-a').innerHTML=blocoEquipe(equipeA,atletasA,null,0);
-document.getElementById('sp-bloco-b').innerHTML=blocoEquipe(equipeB,atletasB,null,1);
+// Blocos das equipes (principal + AJUDA veterano)
+document.getElementById('sp-bloco-a').innerHTML=blocoEquipe(equipeA,atletasA,vetA,0);
+document.getElementById('sp-bloco-b').innerHTML=blocoEquipe(equipeB,atletasB,vetB,1);
 
 // Mostra prévia
 document.getElementById('sumula-selecao').classList.add('hidden');
