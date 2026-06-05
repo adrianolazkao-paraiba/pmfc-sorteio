@@ -21,8 +21,6 @@ var firebaseConfig = {
 try {
   firebase.initializeApp(firebaseConfig);
   window._db = firebase.firestore();
-  // Long polling: mais compatível com domínios externos (Netlify, etc.)
-  window._db.settings({ experimentalForceLongPolling: true, merge: true });
   window._fbReady = true;
   window.dispatchEvent(new Event('fbready'));
 } catch(e) {
