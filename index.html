@@ -21,6 +21,8 @@ var firebaseConfig = {
 try {
   firebase.initializeApp(firebaseConfig);
   window._db = firebase.firestore();
+  // Long polling: mais compatível com domínios externos (Netlify, etc.)
+  window._db.settings({ experimentalForceLongPolling: true, merge: true });
   window._fbReady = true;
   window.dispatchEvent(new Event('fbready'));
 } catch(e) {
@@ -773,7 +775,9 @@ function fbListen(col,cb){
   });
 }
 async function loadFromFB(){
-const [aths,votes,reps,dl]=await Promise.all([fbGetAll('athletes'),fbGetAll('voteLog'),fbGetAll('representatives'),fbGet('config','deadline')]);
+const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Tempo de conexão esgotado. Verifique sua internet e tente novamente.')),15000));
+const load=Promise.all([fbGetAll('athletes'),fbGetAll('voteLog'),fbGetAll('representatives'),fbGet('config','deadline')]);
+const [aths,votes,reps,dl]=await Promise.race([load,timeout]);
 S.athletes=aths;S.voteLog=votes;S.representatives=reps;S.deadline=dl||{start:null,end:null};
 }
 function startListeners(){
