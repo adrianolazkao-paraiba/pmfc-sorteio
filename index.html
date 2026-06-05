@@ -193,48 +193,38 @@ tr:hover td{background:#f0f8f0;}
 
 <!-- HOME - DASHBOARD -->
 <div class="screen active" id="scr-home">
-<div class="sec-hdr"><h2>📊 Dashboard</h2><div id="dash-prazo"></div></div>
 
-<!-- LINHA 1: STATS GERAIS -->
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px;" id="dash-stats-gerais"></div>
+<!-- BANNER PRAZO -->
+<div id="dash-deadline-banner" style="display:none;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;border:1.5px solid #a8dbb5;margin-bottom:16px;font-size:.85rem;font-weight:600;"></div>
 
-<!-- LINHA 2: POR POSIÇÃO + POR CATEGORIA -->
+<!-- KPI CARDS -->
+<div id="dash-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:20px;"></div>
+
+<!-- STATUS POR CATEGORIA -->
+<div style="margin-bottom:20px;">
+<div style="font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:2.5px;color:var(--gray-light);margin-bottom:10px;">STATUS POR CATEGORIA</div>
+<div id="dash-cat-status" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+</div>
+
+<!-- AGENDA + ATIVIDADE -->
 <div class="g2" style="margin-bottom:16px;">
-<div class="card">
-<div class="card-title">⚽ Atletas por Posição</div>
-<div id="dash-posicoes"></div>
+<div class="card" style="margin-bottom:0;">
+<div class="card-title">📅 Agenda — Hoje</div>
+<div id="dash-agenda" style="font-size:.85rem;min-height:60px;"></div>
 </div>
-<div class="card">
-<div class="card-title">🏷 Atletas por Categoria</div>
-<div id="dash-categorias"></div>
+<div class="card" style="margin-bottom:0;">
+<div class="card-title">⚡ Atividade Recente</div>
+<div id="dash-atividade" style="font-size:.85rem;min-height:60px;"></div>
 </div>
 </div>
 
-<!-- LINHA 3: STATUS DE VOTOS + LISTA DE ESPERA -->
-<div class="g2" style="margin-bottom:16px;">
-<div class="card">
-<div class="card-title">🗳 Status da Votação</div>
-<div id="dash-votos"></div>
-</div>
+<!-- ESPERA PREVIEW -->
 <div class="card" style="border-left:4px solid #c0392b;">
 <div class="card-title" style="justify-content:space-between;">
 <span>⏳ Lista de Espera</span>
 <button class="btn btn-outline btn-sm" onclick="goTo('espera',null)">Ver tudo →</button>
 </div>
 <div id="home-espera-preview" style="font-size:.82rem;"></div>
-</div>
-</div>
-
-<!-- LINHA 4: BOTÕES DE CATEGORIA + ÚLTIMOS VOTOS -->
-<div class="g2" style="margin-bottom:16px;">
-<div class="card">
-<div class="card-title">🏃 Categorias</div>
-<div id="home-cat-buttons" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
-</div>
-<div class="card">
-<div class="card-title">📋 Últimos Votos</div>
-<div id="home-log" style="font-size:.82rem;"></div>
-</div>
 </div>
 
 <!-- DETALHE CATEGORIA (oculto inicialmente) -->
@@ -327,7 +317,18 @@ tr:hover td{background:#f0f8f0;}
 <option value="2">2º Semestre</option>
 </select></div>
 </div>
-<div><label class="lbl">Descrição (opcional)</label><input type="text" class="inp" id="arq-desc" placeholder="Ex: Campeão - Panteras Imóveis"/></div>
+<div><label class="lbl">Descrição (opcional)</label><input type="text" class="inp" id="arq-desc" placeholder="Ex: Campeão Principal - Grupo GCT"/></div>
+<div style="margin-top:10px;">
+<div style="font-size:.75rem;color:var(--green-dark);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🏆 Campeões por Categoria (opcional)</div>
+<div class="frow c2">
+<div><label class="lbl">Principal</label><input type="text" class="inp" id="arq-camp-principal" placeholder="Time campeão"/></div>
+<div><label class="lbl">Veterano</label><input type="text" class="inp" id="arq-camp-veterano" placeholder="Time campeão"/></div>
+</div>
+<div class="frow c2">
+<div><label class="lbl">Master</label><input type="text" class="inp" id="arq-camp-master" placeholder="Time campeão"/></div>
+<div><label class="lbl">Sênior</label><input type="text" class="inp" id="arq-camp-senior" placeholder="Time campeão"/></div>
+</div>
+</div>
 <button class="btn btn-primary mt8" onclick="arquivarCampeonato()">📦 Arquivar e Iniciar Novo</button>
 </div>
 </div>
@@ -854,213 +855,189 @@ if(screen==='historico')renderHistorico();
 function renderHome(){
 const aths=S.athletes;
 const votes=S.voteLog;
-
-// ── Stats gerais
-const total=aths.length;
-const goleiros=aths.filter(a=>a.goalkeeper==='sim').length;
-const alas=aths.filter(a=>a.position==='ala').length;
-const fixos=aths.filter(a=>a.position==='fixo').length;
-const meias=aths.filter(a=>a.position==='meia').length;
-const pivos=aths.filter(a=>a.position==='pivo').length;
-const idsVotados=new Set(votes.map(v=>v.athleteId));
-const avaliados=aths.filter(a=>idsVotados.has(a.id)).length;
-const semNota=total-avaliados;
-
-// Espera total
-let totalEspera=0;
-CATS.forEach(cat=>{
-const campo=aths.filter(a=>a.category===cat&&a.goalkeeper!=='sim');
-const fora=Math.max(0,campo.length-(MAX_LINHA*MAX_TIMES));
-totalEspera+=fora;
-});
-
-// Prazo
 const now=new Date();
 const end=S.deadline.end?new Date(S.deadline.end):null;
-let prazoTxt='–';let prazoColor='var(--gray)';
+const idsVotados=new Set(votes.map(v=>v.athleteId));
+const total=aths.length;
+const avaliados=aths.filter(a=>idsVotados.has(a.id)).length;
+const pctGlobal=total?Math.round(avaliados/total*100):0;
+const hoje=now.toISOString().split('T')[0];
+const jogosHoje=TABELA_JOGOS.filter(j=>j.data===hoje);
+
+// ── Banner de Prazo
+const dlBanner=document.getElementById('dash-deadline-banner');
+if(dlBanner){
 if(end){
 const diff=end-now;
-if(diff>0){prazoTxt=Math.floor(diff/86400000)+' dia(s)';prazoColor='var(--green-light)';}
-else{prazoTxt='Encerrado';prazoColor='#c0392b';}
+if(diff>0){
+const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000);
+const urgente=diff<86400000;
+dlBanner.style.display='flex';
+dlBanner.style.background=urgente?'linear-gradient(90deg,#fde8e6,#fff)':'linear-gradient(90deg,#eaf6ee,#fff)';
+dlBanner.style.borderColor=urgente?'#f0b0aa':'#a8dbb5';
+dlBanner.style.color=urgente?'#7a1c12':'var(--green-dark)';
+dlBanner.innerHTML=(urgente?'⚠️':'🕐')+' &nbsp;Prazo encerra em <strong>'+(d>0?d+'d ':'')+h+'h'+(d===0?' '+m+'min':'')+'</strong>'+(urgente?' &nbsp;<span style="color:#c0392b;">— atenção!</span>':'');
+}else{
+dlBanner.style.display='flex';dlBanner.style.background='linear-gradient(90deg,#fde8e6,#fff)';dlBanner.style.borderColor='#f0b0aa';dlBanner.style.color='#7a1c12';
+dlBanner.innerHTML='🔒 &nbsp;Prazo de votação <strong>encerrado</strong>';
+}
+}else{dlBanner.style.display='none';}
 }
 
-// Stats gerais boxes
-const statsData=[
-{num:total,lbl:'Total Atletas',color:'var(--green-dark)',icon:'👥'},
-{num:goleiros,lbl:'Goleiros',color:'#0a3a6b',icon:'🧤'},
-{num:alas,lbl:'Alas',color:'var(--green)',icon:'⚡'},
-{num:fixos,lbl:'Fixos',color:'#7a5c00',icon:'🛡'},
-{num:meias,lbl:'Meias',color:'#4a0080',icon:'🎯'},
-{num:pivos,lbl:'Pivôs',color:'#7a1c12',icon:'🔥'},
-{num:votes.length,lbl:'Votos Dados',color:'var(--gold)',icon:'🗳'},
-{num:totalEspera,lbl:'Lista Espera',color:'#c0392b',icon:'⏳'},
+// ── KPI Cards
+const kpiEl=document.getElementById('dash-kpis');
+if(kpiEl){
+const jogosProximos=TABELA_JOGOS.filter(j=>j.data>=hoje).slice(0,1);
+const proxJogo=jogosProximos[0];
+const kpis=[
+{icon:'👥',val:total,sub:'atletas inscritos',color:'var(--green-dark)',bg:'#eaf6ee',border:'#1a6b2f'},
+{icon:'⭐',val:pctGlobal+'%',sub:avaliados+'/'+total+' avaliados',color:'#b8860b',bg:'#fdf8ec',border:'#c9a84c'},
+{icon:'📋',val:votes.length,sub:'votos registrados',color:'var(--green)',bg:'#f0f9f2',border:'#2d8a4e'},
+{icon:'📅',val:jogosHoje.length||'–',sub:jogosHoje.length?'jogo(s) hoje':'próx: '+(proxJogo?proxJogo.data.split('-').reverse().join('/'):'–'),color:'#1d4ed8',bg:'#eff6ff',border:'#3b82f6'},
 ];
-document.getElementById('dash-stats-gerais').innerHTML=statsData.map(s=>
-'<div class="stat-box" style="cursor:default;">'
-+'<div style="font-size:1.4rem;margin-bottom:4px;">'+s.icon+'</div>'
-+'<div class="stat-num" style="font-size:2rem;color:'+s.color+';">'+s.num+'</div>'
-+'<div class="stat-lbl">'+s.lbl+'</div>'
+kpiEl.innerHTML=kpis.map(k=>
+'<div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid #e8ede8;border-top:3px solid '+k.border+';display:flex;align-items:center;gap:12px;">'
++'<div style="width:44px;height:44px;border-radius:12px;background:'+k.bg+';display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">'+k.icon+'</div>'
++'<div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.7rem;line-height:1;color:'+k.color+';">'+k.val+'</div>'
++'<div style="font-size:.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">'+k.sub+'</div></div>'
 +'</div>'
 ).join('');
+}
 
-// ── Por posição barra de progresso
-const posicoes=[
-{nome:'Goleiros',qtd:goleiros,total,color:'#0a3a6b',icon:'🧤'},
-{nome:'Alas',qtd:alas,total,color:'var(--green)',icon:'⚡'},
-{nome:'Fixos',qtd:fixos,total,color:'#7a5c00',icon:'🛡'},
-{nome:'Meias',qtd:meias,total,color:'#4a0080',icon:'🎯'},
-{nome:'Pivôs',qtd:pivos,total,color:'#7a1c12',icon:'🔥'},
-];
-document.getElementById('dash-posicoes').innerHTML=posicoes.map(p=>{
-const pct=total?Math.round((p.qtd/total)*100):0;
-return '<div style="margin-bottom:12px;">'
-+'<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px;">'
-+'<span>'+p.icon+' '+p.nome+'</span>'
-+'<strong style="color:'+p.color+';">'+p.qtd+' ('+pct+'%)</strong>'
+// ── Category Status Cards
+const catColors={principal:'#1d4ed8',veterano:'#1a6b2f',master:'#b8860b',senior:'#475569'};
+const catBgs={principal:'#eff6ff',veterano:'#eaf6ee',master:'#fdf8ec',senior:'#f8fafc'};
+const catIcons={principal:'⚽',veterano:'🏆',master:'⭐',senior:'👑'};
+const catsVisiveis=(!isAdmin()&&S.user&&S.user.category)?[S.user.category]:CATS;
+const catStatusEl=document.getElementById('dash-cat-status');
+if(catStatusEl){
+catStatusEl.innerHTML=catsVisiveis.map(cat=>{
+const catAths=aths.filter(a=>a.category===cat);
+const catVot=catAths.filter(a=>idsVotados.has(a.id)).length;
+const pct=catAths.length?Math.round(catVot/catAths.length*100):0;
+const col=catColors[cat];const bg=catBgs[cat];const ic=catIcons[cat];
+const hasGk=catAths.filter(a=>a.goalkeeper==='sim').length;
+let stTxt,stBg,stCol;
+if(!catAths.length){stTxt='Sem atletas';stBg='#f1f5f9';stCol='#64748b';}
+else if(pct===0){stTxt='Aguardando votos';stBg='#f1f5f9';stCol='#64748b';}
+else if(pct<100){stTxt='Votação em andamento';stBg='#fff8e0';stCol='#7a5c00';}
+else{stTxt='✓ Votação completa';stBg='#d4f0dc';stCol='#1a6b2f';}
+return '<div onclick="openCatDetail(\'' + cat + '\')" style="background:#fff;border-radius:14px;padding:16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:2px solid #e8ede8;transition:all .2s;position:relative;overflow:hidden;"'
++' onmouseover="this.style.borderColor=\'' + col + '\';this.style.transform=\'translateY(-2px)\';"'
++' onmouseout="this.style.borderColor=\'#e8ede8\';this.style.transform=\'none\';">'
++'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+col+';"></div>'
++'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'
++'<div><div style="font-size:.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">'+ic+' '+CLBL_SHORT[cat]+'</div>'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:2rem;line-height:1;color:'+col+';">'+catAths.length+'</div>'
++'<div style="font-size:.65rem;color:var(--gray);">atletas · '+hasGk+' goleiro(s)</div></div>'
++'<div style="text-align:right;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;color:'+col+';">'+pct+'%</div>'
++'<div style="font-size:.62rem;color:var(--gray);">avaliados</div></div>'
 +'</div>'
-+'<div style="background:#e8f0e8;border-radius:6px;height:10px;overflow:hidden;">'
-+'<div style="background:'+p.color+';height:100%;width:'+pct+'%;border-radius:6px;transition:width .5s;"></div>'
-+'</div></div>';
-}).join('');
-
-// ── Por categoria
-document.getElementById('dash-categorias').innerHTML=CATS.map(c=>{
-const n=aths.filter(a=>a.category===c).length;
-const g=aths.filter(a=>a.category===c&&a.goalkeeper==='sim').length;
-const v=votes.filter(vt=>{const a=aths.find(x=>x.id===vt.athleteId);return a&&a.category===c;}).length;
-const pct=total?Math.round((n/total)*100):0;
-const cores={principal:'#0a3a6b',veterano:'var(--green-dark)',master:'#7a5c00',senior:'#7a1c12'};
-return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eaf2ea;gap:8px;">'
-+'<div>'
-+'<div style="font-weight:700;font-size:.85rem;color:'+cores[c]+' ;">'+CLBL_SHORT[c]+'</div>'
-+'<div style="font-size:.72rem;color:var(--gray);">'+n+' atletas · '+g+' goleiros · '+v+' votos</div>'
-+'</div>'
-+'<div style="text-align:right;">'
-+'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;color:'+cores[c]+';">'+n+'</div>'
-+'<div style="font-size:.68rem;color:var(--gray);">'+pct+'%</div>'
-+'</div>'
++'<div style="background:#e8ede8;border-radius:6px;height:5px;margin-bottom:10px;overflow:hidden;">'
++'<div style="background:'+col+';height:100%;width:'+pct+'%;border-radius:6px;transition:width .8s;"></div></div>'
++'<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700;background:'+stBg+';color:'+stCol+';">'+stTxt+'</span>'
 +'</div>';
 }).join('');
+}
 
-// ── Status votação
-const pctVotados=total?Math.round((avaliados/total)*100):0;
-document.getElementById('dash-votos').innerHTML=
-'<div style="margin-bottom:12px;">'
-+'<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;">'
-+'<span>✅ Avaliados</span><strong style="color:var(--green-dark);">'+avaliados+' ('+pctVotados+'%)</strong>'
-+'</div>'
-+'<div style="background:#e8f0e8;border-radius:6px;height:12px;overflow:hidden;">'
-+'<div style="background:var(--green);height:100%;width:'+pctVotados+'%;border-radius:6px;"></div>'
-+'</div></div>'
-+'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eaf2ea;font-size:.82rem;">'
-+'<span>⚠️ Sem nota</span><span class="badge bg-red">'+semNota+'</span></div>'
-+'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eaf2ea;font-size:.82rem;">'
-+'<span>🗳 Total de votos</span><span class="badge bg-green">'+votes.length+'</span></div>'
-+'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.82rem;">'
-+'<span>⏰ Prazo</span><span style="font-weight:700;color:'+prazoColor+';">'+prazoTxt+'</span></div>';
-
-// ── Botões categoria + log de votos (versão expandida abaixo)
-
-document.getElementById('s-ath').textContent=S.athletes.length;
-document.getElementById('s-votes').textContent=S.voteLog.length;
-const dlEl=document.getElementById('s-dl'),dlSub=document.getElementById('s-dl-sub');
-if(end){
-dlEl.textContent=end.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-const diff=end-now;
-if(diff>0){dlSub.textContent=Math.floor(diff/86400000)+' dia(s)';dlSub.style.color='var(--green-light)';}
-else{dlSub.textContent='Encerrado';dlSub.style.color='#c0392b';}
-}else{dlEl.textContent='–';dlSub.textContent='Prazo';}
-
-// Botões categoria — versão expandida
-const catsVisiveis=(!isAdmin()&&S.user&&S.user.category)?[S.user.category]:CATS;
-document.getElementById('home-cat-buttons').innerHTML=catsVisiveis.map(c=>{
-const total=S.athletes.filter(a=>a.category===c).length;
-// Atletas que já receberam voto de algum representante
-const idsVotados=new Set(S.voteLog.filter(vt=>{const a=S.athletes.find(x=>x.id===vt.athleteId);return a&&a.category===c;}).map(vt=>vt.athleteId));
-const semNota=S.athletes.filter(a=>a.category===c&&!idsVotados.has(a.id)).length;
-return '<button onclick="openCatDetail(\''+c+'\')" style="background:#fff;border:2px solid #d4e8d4;border-radius:16px;padding:22px 16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 10px rgba(26,107,47,0.08);transition:all .25s;width:160px;min-height:160px;" onmouseover="this.style.borderColor=\'var(--green)\';this.style.transform=\'translateY(-3px)\';this.style.boxShadow=\'0 6px 20px rgba(26,107,47,0.15)\'" onmouseout="this.style.borderColor=\'#d4e8d4\';this.style.transform=\'none\';this.style.boxShadow=\'0 2px 10px rgba(26,107,47,0.08)\'">'
-+'<img src="https://www.primeirodemaio.com.br/imagens/logo.png" style="width:90px;height:90px;object-fit:contain;" onerror="this.style.display=\'none\'"/>'
-+'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--green-dark);text-align:center;">'+CLBL_SHORT[c]+'</div>'
-+'<div style="font-size:.75rem;color:var(--gray);text-align:center;">'+total+' atletas</div>'
-+(semNota>0?'<div style="font-size:.7rem;background:#fde8e6;color:#c0392b;border-radius:8px;padding:2px 10px;font-weight:700;">'+semNota+' sem nota</div>':'<div style="font-size:.7rem;background:#d4f0dc;color:var(--green-dark);border-radius:8px;padding:2px 10px;font-weight:700;">✓ OK</div>')
-+'</button>';
-}).join('');
-
-// Últimos votos — só mostra representante, atleta e data (sem nota)
-const logs=[...S.voteLog].reverse().slice(0,8);
-const logEl=document.getElementById('home-log');
-if(!logs.length){logEl.innerHTML='<span style="color:var(--gray);">Nenhum voto ainda.</span>';}
+// ── Agenda de Hoje
+const agendaEl=document.getElementById('dash-agenda');
+if(agendaEl){
+if(!jogosHoje.length){
+const proximos=TABELA_JOGOS.filter(j=>j.data>hoje).slice(0,2);
+if(!proximos.length){agendaEl.innerHTML='<div style="text-align:center;padding:18px;"><div style="font-size:1.8rem;">📭</div><div style="font-size:.8rem;color:var(--gray);margin-top:4px;">Nenhum jogo hoje</div></div>';}
 else{
-const repMap={};
-logs.forEach(v=>{
-const a=S.athletes.find(x=>x.id===v.athleteId);
-if(!repMap[v.repUser])repMap[v.repUser]={rep:v.repUser,atletas:[],ts:v.timestamp};
-repMap[v.repUser].atletas.push(a?a.name:'?');
-if(v.timestamp>repMap[v.repUser].ts)repMap[v.repUser].ts=v.timestamp;
-});
-logEl.innerHTML=Object.values(repMap).map(r=>
-'<div style="padding:6px 0;border-bottom:1px solid #eaf2ea;">'
-+'<strong style="color:var(--green-dark);">'+r.rep+'</strong> votou em '
-+'<span style="color:var(--green);">'+r.atletas.slice(0,3).join(', ')+(r.atletas.length>3?' e mais '+(r.atletas.length-3)+'...':'')+'</span>'
-+'<div style="color:var(--gray);font-size:.72rem;">'+new Date(r.ts).toLocaleString('pt-BR')+'</div>'
+agendaEl.innerHTML='<div style="font-size:.7rem;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Próximos jogos:</div>'
++proximos.map(j=>'<div style="padding:8px 0;border-bottom:1px solid #eaf2ea;">'
++'<div style="display:flex;justify-content:space-between;align-items:center;">'
++'<div style="font-size:.72rem;font-weight:700;color:'+catColors[j.cat]+';">'+j.hora+' <span style="font-weight:400;color:var(--gray);">· #'+j.jg+'</span></div>'
++'<span style="font-size:.62rem;background:'+catBgs[j.cat]+';color:'+catColors[j.cat]+';padding:1px 7px;border-radius:10px;font-weight:700;">'+CLBL_SHORT[j.cat]+'</span>'
++'</div>'
++'<div style="font-size:.85rem;font-weight:700;margin-top:2px;">'+j.timeA+' <span style="color:var(--gray);">×</span> '+j.timeB+'</div>'
++'<div style="font-size:.65rem;color:var(--gray);">'+new Date(j.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})+'</div>'
++'</div>').join('');
+}
+}else{
+agendaEl.innerHTML=jogosHoje.sort((a,b)=>a.hora.localeCompare(b.hora)).map(j=>
+'<div style="padding:9px 0;border-bottom:1px solid #eaf2ea;">'
++'<div style="display:flex;justify-content:space-between;align-items:center;">'
++'<div style="font-size:.75rem;font-weight:700;color:'+catColors[j.cat]+';">'+j.hora+' <span style="font-weight:400;color:var(--gray);">· Jogo #'+j.jg+'</span></div>'
++'<span style="font-size:.62rem;background:'+catBgs[j.cat]+';color:'+catColors[j.cat]+';padding:2px 8px;border-radius:10px;font-weight:700;">'+CLBL_SHORT[j.cat]+'</span>'
++'</div>'
++'<div style="font-size:.88rem;font-weight:700;margin-top:2px;">'+j.timeA+' <span style="color:var(--gray);">×</span> '+j.timeB+'</div>'
 +'</div>'
 ).join('');
 }
+}
 
-// Preview lista de espera — todos os atletas em espera de todas as categorias
-const esperaEl=document.getElementById('home-espera-preview');
+// ── Atividade Recente
+const atividadeEl=document.getElementById('dash-atividade');
+if(atividadeEl){
+const recent=[...votes].sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+const repMap={};
+recent.slice(0,40).forEach(v=>{
+if(!repMap[v.repUser])repMap[v.repUser]={rep:v.repUser,team:v.repTeam||'',count:0,ts:v.timestamp||0};
+repMap[v.repUser].count++;
+if((v.timestamp||0)>repMap[v.repUser].ts)repMap[v.repUser].ts=v.timestamp;
+});
+const entries=Object.values(repMap).sort((a,b)=>b.ts-a.ts).slice(0,6);
+if(!entries.length){
+atividadeEl.innerHTML='<div style="text-align:center;padding:18px;"><div style="font-size:1.8rem;">📋</div><div style="font-size:.8rem;color:var(--gray);margin-top:4px;">Nenhum voto registrado</div></div>';
+}else{
+const initials=n=>n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+atividadeEl.innerHTML=entries.map(r=>
+'<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #eaf2ea;">'
++'<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--green-dark),var(--green));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">'+initials(r.rep)+'</div>'
++'<div style="flex:1;min-width:0;">'
++'<div style="font-size:.82rem;font-weight:700;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+r.rep+'</div>'
++'<div style="font-size:.68rem;color:var(--gray);">'+(r.team||'')+(r.team?' · ':'')+r.count+' voto(s)</div>'
++'</div>'
++(r.ts?'<div style="font-size:.62rem;color:var(--gray-light);white-space:nowrap;">'+new Date(r.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</div>':'')
++'</div>'
+).join('');
+}
+}
+
+// ── Lista de Espera preview
 const idsVotadosAll=new Set(S.voteLog.map(v=>v.athleteId));
+const esperaEl=document.getElementById('home-espera-preview');
+if(esperaEl){
 let todosEspera=[];
 CATS.forEach(cat=>{
-const todosCampo=S.athletes
-.filter(a=>a.category===cat&&a.goalkeeper!=='sim')
-.map(a=>({...a,avgFinal:getOverall(a)||5}))
-.sort((a,b)=>{
-if(b.avgFinal!==a.avgFinal) return b.avgFinal-a.avgFinal;
-return (a.inscricaoOrdem||99999)-(b.inscricaoOrdem||99999);
+const campo=aths.filter(a=>a.category===cat&&a.goalkeeper!=='sim')
+.map(a=>({...a,avgFinal:getOverall(a)||5})).sort((a,b)=>b.avgFinal-a.avgFinal);
+campo.slice(MAX_LINHA*MAX_TIMES).sort((a,b)=>(b.inscricaoOrdem||99999)-(a.inscricaoOrdem||99999))
+.forEach(a=>todosEspera.push({...a,cat}));
 });
-const fora=todosCampo.slice(MAX_LINHA*MAX_TIMES);
-fora.forEach(a=>todosEspera.push({...a,cat}));
-});
-
 if(!todosEspera.length){
-esperaEl.innerHTML='<div style="color:var(--green-dark);font-size:.82rem;padding:10px 0;">✅ Nenhum atleta em espera.</div>';
+esperaEl.innerHTML='<div style="color:var(--green-dark);font-size:.82rem;padding:8px 0;">✅ Nenhum atleta em lista de espera.</div>';
 }else{
-// Sem nota primeiro, depois com nota
 const semNota=todosEspera.filter(a=>!idsVotadosAll.has(a.id));
 const comNota=todosEspera.filter(a=>idsVotadosAll.has(a.id));
 const todos=[...semNota,...comNota];
-esperaEl.innerHTML=
-'<div style="margin-bottom:8px;font-size:.78rem;color:var(--gray);">'+todos.length+' atleta(s) no total — '+semNota.length+' sem nota</div>'
-+todos.slice(0,12).map(a=>
-'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #eaf2ea;">'
-+'<span style="font-size:.8rem;">'
-+(!idsVotadosAll.has(a.id)?'<span style="color:#c0392b;font-weight:700;">⚠ </span>':'')
-+a.name
-+'</span>'
+esperaEl.innerHTML='<div style="font-size:.75rem;color:var(--gray);margin-bottom:6px;">'+todos.length+' atleta(s) · <strong style="color:#c0392b;">'+semNota.length+' sem nota</strong></div>'
++todos.slice(0,8).map(a=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #eaf2ea;">'
++'<span style="font-size:.78rem;">'+(!idsVotadosAll.has(a.id)?'<span style="color:#c0392b;font-weight:700;">⚠ </span>':'')+a.name+'</span>'
 +'<span class="badge '+(a.cat==='principal'?'bg-blue':a.cat==='veterano'?'bg-green':a.cat==='master'?'bg-gold':'bg-gray')+'">'+CLBL_SHORT[a.cat]+'</span>'
-+'</div>'
-).join('')
-+(todos.length>12?'<div style="text-align:center;margin-top:8px;"><button class="btn btn-outline btn-sm" onclick="goTo(\'espera\',null)">Ver todos os '+todos.length+' →</button></div>':'');
++'</div>').join('')
++(todos.length>8?'<div style="text-align:center;margin-top:8px;"><button class="btn btn-outline btn-sm" onclick="goTo(\'espera\',null)">Ver todos os '+todos.length+' →</button></div>':'');
+}
 }
 }
 
 function openCatDetail(cat){
-document.getElementById('home-cat-buttons').classList.add('hidden');
-document.getElementById('home-log-card').classList.add('hidden');
+// Scroll to detail and hide main dashboard sections
 document.getElementById('home-cat-detail').classList.remove('hidden');
+document.getElementById('dash-kpis').style.display='none';
+document.getElementById('dash-cat-status').parentElement.style.display='none';
 document.getElementById('home-detail-title').textContent=CLBL[cat]+' — Atletas';
+document.getElementById('busca-atleta').value='';
 
-// IDs que já foram votados por algum representante
 const idsVotados=new Set(S.voteLog.filter(v=>{const a=S.athletes.find(x=>x.id===v.athleteId);return a&&a.category===cat;}).map(v=>v.athleteId));
-
-const todos=[...S.athletes.filter(a=>a.category===cat)].sort((a,b)=>( getOverall(b)||0)-(getOverall(a)||0));
+const todos=[...S.athletes.filter(a=>a.category===cat)].sort((a,b)=>(getOverall(b)||0)-(getOverall(a)||0));
 const semNota=todos.filter(a=>!idsVotados.has(a.id));
 const comNota=todos.filter(a=>idsVotados.has(a.id));
-// Sem nota vem primeiro
-const ordenados=[...semNota,...comNota];
-
-window._catDetailAthletes=ordenados;
+window._catDetailAthletes=[...semNota,...comNota];
 window._catDetailCat=cat;
 renderCatDetailTable('');
 }
@@ -1094,10 +1071,8 @@ return '<tr style="'+rowStyle+'">'
 }
 function closeCatDetail(){
 document.getElementById('home-cat-detail').classList.add('hidden');
-document.getElementById('home-cat-buttons').classList.remove('hidden');
-document.getElementById('home-log-card').classList.remove('hidden');
-document.getElementById('busca-atleta').value='';
-window._catDetailAthletes=[];
+document.getElementById('dash-kpis').style.display='';
+document.getElementById('dash-cat-status').parentElement.style.display='';
 }
 
 // ── OVERALL ───────────────────────────────────────────────────────────
@@ -2295,56 +2270,103 @@ async function arquivarCampeonato(){
 const ano=document.getElementById('arq-ano').value||new Date().getFullYear();
 const sem=document.getElementById('arq-sem').value;
 const desc=document.getElementById('arq-desc').value.trim();
-if(!confirm('Arquivar o campeonato '+ano+' - '+sem+'º Semestre?\n\nIsso vai salvar todos os dados no histórico e limpar atletas e votos para o próximo campeonato.'))return;
-const [aths,votes,draws]=await Promise.all([
-fbGetAll('athletes'),fbGetAll('voteLog'),fbGetAll('drawResults')
-]);
+const campeoes={
+principal:(document.getElementById('arq-camp-principal').value||'').trim(),
+veterano:(document.getElementById('arq-camp-veterano').value||'').trim(),
+master:(document.getElementById('arq-camp-master').value||'').trim(),
+senior:(document.getElementById('arq-camp-senior').value||'').trim(),
+};
+if(!confirm('Arquivar o campeonato '+ano+' — '+sem+'º Semestre?\n\nOs dados serão salvos no histórico e o sistema será limpo para o próximo campeonato.'))return;
+const [aths,votes,draws]=await Promise.all([fbGetAll('athletes'),fbGetAll('voteLog'),fbGetAll('drawResults')]);
 const id='camp_'+ano+'_'+sem+'_'+Date.now();
 await fbSet('historico',id,{
-id,ano:parseInt(ano),semestre:parseInt(sem),
-descricao:desc||'',
+id,ano:parseInt(ano),semestre:parseInt(sem),descricao:desc||'',
+campeoes,
 arquivadoEm:new Date().toISOString(),
-totalAtletas:aths.length,
-totalVotos:votes.length,
+totalAtletas:aths.length,totalVotos:votes.length,
 athletes:JSON.stringify(aths),
 voteLog:JSON.stringify(votes),
 drawResults:JSON.stringify(draws),
 });
-await Promise.all([
-...aths.map(a=>fbDel('athletes',a.id)),
-...votes.map(v=>fbDel('voteLog',v.id)),
-...draws.map(d=>fbDel('drawResults',d.id)),
-]);
-showModal('Campeonato Arquivado!','Campeonato '+ano+' - '+sem+'º Semestre salvo com '+aths.length+' atletas e '+votes.length+' votos. Sistema limpo para o próximo!');
+await Promise.all([...aths.map(a=>fbDel('athletes',a.id)),...votes.map(v=>fbDel('voteLog',v.id)),...draws.map(d=>fbDel('drawResults',d.id))]);
+showModal('✅ Campeonato Arquivado!','Campeonato '+ano+' — '+sem+'º Semestre salvo com '+aths.length+' atletas e '+votes.length+' votos. Sistema pronto para o próximo!');
 }
 
 // ── HISTÓRICO ─────────────────────────────────────────────────────────
 async function renderHistorico(){
 const lista=document.getElementById('historico-lista');
-lista.innerHTML='<div style="text-align:center;color:var(--gray);padding:20px;">Carregando...</div>';
+lista.innerHTML='<div style="text-align:center;color:var(--gray);padding:30px;">Carregando...</div>';
 const camps=await fbGetAll('historico');
 if(!camps.length){
-lista.innerHTML='<div class="card" style="text-align:center;color:var(--gray);padding:30px;">Nenhum campeonato arquivado ainda.</div>';
+lista.innerHTML='<div class="card" style="text-align:center;padding:40px;">'
++'<div style="font-size:3rem;margin-bottom:12px;">🏆</div>'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--gray);">Nenhum campeonato arquivado ainda</div>'
++'<div style="font-size:.82rem;color:var(--gray-light);margin-top:6px;">Quando o campeonato terminar, arquive-o em Admin para guardar todo o histórico.</div>'
++'</div>';
 return;
 }
 camps.sort((a,b)=>b.ano-a.ano||b.semestre-a.semestre);
+const catColors={principal:'#1d4ed8',veterano:'#1a6b2f',master:'#b8860b',senior:'#475569'};
+const catIcons={principal:'⚽',veterano:'🏆',master:'⭐',senior:'👑'};
+
 lista.innerHTML=camps.map(c=>{
-const data=new Date(c.arquivadoEm).toLocaleDateString('pt-BR');
-return '<div class="card" style="margin-bottom:16px;">'
-+'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;">'
+const dataArq=new Date(c.arquivadoEm).toLocaleDateString('pt-BR');
+const draws=c.drawResults?JSON.parse(c.drawResults):[];
+const totalTimes=draws.length>0?Object.keys(JSON.parse(draws[0]?.teams||'{}')).length:0;
+const campeoes=c.campeoes||{};
+const hasCampeoes=Object.values(campeoes).some(v=>v);
+
+// Campeões por categoria
+const campeoesHtml=CATS.map(cat=>{
+const camp=campeoes[cat];
+if(!camp) return '';
+return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eaf2ea;">'
++'<span style="font-size:.65rem;background:'+catColors[cat]+'20;color:'+catColors[cat]+';padding:2px 7px;border-radius:10px;font-weight:700;min-width:64px;text-align:center;">'+catIcons[cat]+' '+CLBL_SHORT[cat]+'</span>'
++'<span style="font-size:.88rem;font-weight:700;color:var(--text-dark);">🥇 '+camp+'</span>'
++'</div>';
+}).filter(Boolean).join('');
+
+// Draws resumo por categoria
+const drawsAtletas=c.athletes?JSON.parse(c.athletes):[];
+const catStats=CATS.map(cat=>{
+const n=drawsAtletas.filter(a=>a.category===cat).length;
+return n>0?'<span style="font-size:.7rem;background:#f0f5f0;padding:2px 8px;border-radius:8px;color:var(--gray);">'+catIcons[cat]+' '+CLBL_SHORT[cat]+': '+n+'</span>':'';
+}).filter(Boolean).join(' ');
+
+return '<div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">'
+// ── Header do campeonato
++'<div style="background:linear-gradient(135deg,var(--green-dark),var(--green));padding:20px 24px;position:relative;">'
++'<div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:url(\'https://www.primeirodemaio.com.br/imagens/logo.png\') center/contain no-repeat;opacity:.08;"></div>'
++'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">'
 +'<div>'
-+'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--green-dark);">🏆 '+c.ano+' — '+c.semestre+'º Semestre</div>'
-+(c.descricao?'<div style="color:var(--gold);font-size:.9rem;font-weight:700;margin-top:2px;">'+c.descricao+'</div>':'')
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.6rem;letter-spacing:3px;color:#fff;">'+c.ano+' — '+c.semestre+'º SEMESTRE</div>'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.85rem;letter-spacing:2px;color:var(--gold);">CAMPEONATO INTERNO · PRIMEIRO DE MAIO FC</div>'
++(c.descricao?'<div style="font-size:.8rem;color:rgba(255,255,255,.8);margin-top:4px;">'+c.descricao+'</div>':'')
 +'</div>'
-+'<span class="badge bg-gray">Arquivado em '+data+'</span>'
++'<span style="font-size:.68rem;background:rgba(255,255,255,.15);color:var(--gold);padding:4px 10px;border-radius:20px;white-space:nowrap;">Arquivado '+dataArq+'</span>'
 +'</div>'
-+'<div style="display:flex;gap:12px;flex-wrap:wrap;">'
-+'<div class="stat-box" style="flex:1;min-width:90px;padding:12px;">'
-+'<div class="stat-num" style="font-size:2rem;">'+c.totalAtletas+'</div><div class="stat-lbl">Atletas</div></div>'
-+'<div class="stat-box" style="flex:1;min-width:90px;padding:12px;">'
-+'<div class="stat-num" style="font-size:2rem;">'+c.totalVotos+'</div><div class="stat-lbl">Votos</div></div>'
-+'<div class="stat-box" style="flex:1;min-width:90px;padding:12px;">'
-+'<div class="stat-num" style="font-size:2rem;">4</div><div class="stat-lbl">Categorias</div></div>'
++'</div>'
+// ── Corpo
++'<div style="padding:20px 24px;">'
+// Stats em linha
++'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:16px;">'
++[
+{val:c.totalAtletas,lbl:'Atletas'},
+{val:c.totalVotos,lbl:'Votos'},
+{val:'4',lbl:'Categorias'},
+].map(s=>'<div style="background:var(--off-white);border-radius:10px;padding:12px;text-align:center;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.8rem;color:var(--green-dark);">'+s.val+'</div>'
++'<div style="font-size:.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">'+s.lbl+'</div>'
++'</div>').join('')
++(catStats?'<div style="grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 0;">'+catStats+'</div>':'')
++'</div>'
+// Campeões
++(hasCampeoes
+?'<div style="border:1.5px solid var(--gold);border-radius:10px;padding:14px;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.9rem;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">🏆 CAMPEÕES</div>'
++campeoesHtml
++'</div>'
+:'<div style="font-size:.78rem;color:var(--gray-light);text-align:center;padding:10px;border:1.5px dashed #d4e8d4;border-radius:8px;">Campeões não registrados neste campeonato.</div>')
 +'</div></div>';
 }).join('');
 }
