@@ -2100,80 +2100,64 @@ const equipeB=document.getElementById('sum-equipe-b').value;
 const fase=document.getElementById('sum-fase').value;
 
 if(!equipeA||!equipeB){showModal('Erro','Selecione um jogo primeiro.');return;}
-if(equipeA===equipeB){showModal('Erro','As equipes não podem ser iguais.');return;}
 
-// Mostra loading imediatamente
 const btn=document.getElementById('sum-gerar-btn');
-const oldTxt=btn.textContent;
-btn.textContent='⏳ Gerando...';
+const oldTxt=btn.innerHTML;
+btn.innerHTML='⏳ Gerando...';
 btn.disabled=true;
 
-// Helper: busca com timeout de 5s (não trava se Firestore demorar)
-const fbGetSafe=async(col,id)=>{
+let atletasA=[],atletasB=[],vetA=[],vetB=[];
+
 try{
-const timeout=new Promise(res=>setTimeout(()=>res(null),5000));
-const result=fbGet(col,id);
-return await Promise.race([result,timeout]);
+// Busca com timeout curto de 3s cada — não trava se Firestore estiver lento
+const safe=async(col,id)=>{
+try{
+return await Promise.race([
+fbGet(col,id),
+new Promise(r=>setTimeout(()=>r(null),3000))
+]);
 }catch(e){return null;}
 };
 
-// Busca sorteio principal e ajuda em paralelo (mais rápido)
 const catAjuda={principal:'veterano',veterano:'principal',master:'senior',senior:'master'}[cat]||'veterano';
-const [drawData,drawAjuda]=await Promise.all([
-fbGetSafe('drawResults',cat),
-fbGetSafe('drawResults',catAjuda)
-]);
+const [drawData,drawAjuda]=await Promise.all([safe('drawResults',cat),safe('drawResults',catAjuda)]);
 
-// Função auxiliar de busca por nome (case-insensitive)
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 const findTeam=(teams,name)=>{
 if(!teams||!name)return[];
-if(teams[name]) return teams[name];
-const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 const n=norm(name);
-for(const [k,v] of Object.entries(teams)){if(norm(k)===n) return v;}
-for(const [k,v] of Object.entries(teams)){if(norm(k).includes(n.slice(0,6))||n.includes(norm(k).slice(0,6))) return v;}
-return [];
+for(const [k,v] of Object.entries(teams)){
+if(norm(k)===n||norm(k).includes(n.slice(0,6))||n.includes(norm(k).slice(0,6)))return v;
+}
+return[];
 };
 
-// Atletas do time principal
-let atletasA=[],atletasB=[];
 if(drawData&&drawData.teams){
-try{
-const teams=JSON.parse(drawData.teams);
-const membA=findTeam(teams,equipeA);
-const membB=findTeam(teams,equipeB);
-atletasA=[...membA.filter(a=>a.isGk),...membA.filter(a=>!a.isGk)];
-atletasB=[...membB.filter(a=>a.isGk),...membB.filter(a=>!a.isGk)];
-}catch(e){}
+const t=JSON.parse(drawData.teams);
+const mA=findTeam(t,equipeA),mB=findTeam(t,equipeB);
+atletasA=[...mA.filter(a=>a.isGk),...mA.filter(a=>!a.isGk)];
+atletasB=[...mB.filter(a=>a.isGk),...mB.filter(a=>!a.isGk)];
 }
-
-// Atletas AJUDA
-let vetA=[],vetB=[];
 if(drawAjuda&&drawAjuda.teams){
-try{
-const teamsAjuda=JSON.parse(drawAjuda.teams);
-let rawA=findTeam(teamsAjuda,equipeA);
-let rawB=findTeam(teamsAjuda,equipeB);
-if(cat==='veterano'){
-const inRange=a=>{const ov=parseFloat(a.overall)||0;return ov>=4&&ov<=7;};
-rawA=rawA.filter(inRange);rawB=rawB.filter(inRange);
+const ta=JSON.parse(drawAjuda.teams);
+let rA=findTeam(ta,equipeA),rB=findTeam(ta,equipeB);
+if(cat==='veterano'){const ok=a=>{const v=parseFloat(a.overall)||0;return v>=4&&v<=7;};rA=rA.filter(ok);rB=rB.filter(ok);}
+if(cat==='master'||cat==='senior'){rA=rA.filter(a=>(parseFloat(a.overall)||0)<=7);rB=rB.filter(a=>(parseFloat(a.overall)||0)<=7);}
+vetA=rA.filter(a=>!a.isGk);vetB=rB.filter(a=>!a.isGk);
 }
-if(cat==='master'||cat==='senior'){
-rawA=rawA.filter(a=>(parseFloat(a.overall)||0)<=7);
-rawB=rawB.filter(a=>(parseFloat(a.overall)||0)<=7);
-}
-vetA=rawA.filter(a=>!a.isGk);
-vetB=rawB.filter(a=>!a.isGk);
-}catch(e){}
+}catch(err){
+console.warn('gerarSumula erro (ignorado, continua):', err);
+}finally{
+// Restaura botão SEMPRE, independente de erro
+btn.innerHTML=oldTxt;
+btn.disabled=false;
 }
 
-// Restaura botão
-btn.textContent=oldTxt;btn.disabled=false;
-
-// Preenche cabeçalho da súmula
+// Preenche e exibe a súmula SEMPRE (mesmo sem atletas do Firestore)
 const dataFmt=data?new Date(data+'T12:00:00').toLocaleDateString('pt-BR'):'';
 const confronto=equipeA+' x '+equipeB;
 const competicao='Campeonato Interno '+fase+' 2026';
+
 document.getElementById('sp-competicao').textContent=competicao;
 document.getElementById('sp-cat').textContent=CLBL_SHORT[cat];
 document.getElementById('sp-confronto').textContent=confronto;
@@ -2188,14 +2172,12 @@ document.getElementById('sp-equipe-a-nome').textContent=equipeA;
 document.getElementById('sp-equipe-b-nome').textContent=equipeB;
 document.getElementById('sp-comp2').textContent=competicao;
 document.getElementById('sp-conf2').textContent=confronto;
-const versoInfo=document.getElementById('sp-verso-info');
-if(versoInfo) versoInfo.innerHTML=competicao+'<br/>'+confronto+'<br/>'+dataFmt+' · '+hora;
+const vi=document.getElementById('sp-verso-info');
+if(vi)vi.innerHTML=competicao+'<br/>'+confronto+'<br/>'+dataFmt+' · '+hora;
 
-// Blocos das equipes
 document.getElementById('sp-bloco-a').innerHTML=blocoEquipe(equipeA,atletasA,vetA,0);
 document.getElementById('sp-bloco-b').innerHTML=blocoEquipe(equipeB,atletasB,vetB,1);
 
-// Mostra prévia
 document.getElementById('sumula-selecao').classList.add('hidden');
 document.getElementById('sumula-preview').classList.remove('hidden');
 }
