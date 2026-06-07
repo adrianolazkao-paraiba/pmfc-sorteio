@@ -628,37 +628,37 @@ Use <strong>"Refazer Notas"</strong> para corrigir votos já enviados.
 <!-- Relatório do Árbitro -->
 <div style="border:1px solid #000;margin-bottom:10px;">
 <div style="text-align:center;font-weight:bold;font-size:10px;padding:4px;border-bottom:1px solid #000;background:#f5f5f5;letter-spacing:1px;">RELATÓRIO DO ÁRBITRO</div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="height:34px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="height:26px;"></div>
 </div>
 
 <!-- Relatório do Delegado -->
 <div style="border:1px solid #000;margin-bottom:24px;">
 <div style="text-align:center;font-weight:bold;font-size:10px;padding:4px;border-bottom:1px solid #000;background:#f5f5f5;letter-spacing:1px;">RELATÓRIO DO DELEGADO</div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="border-bottom:1px solid #ccc;height:34px;"></div>
-<div style="height:34px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="border-bottom:1px solid #ccc;height:26px;"></div>
+<div style="height:26px;"></div>
 </div>
 
 <!-- Assinaturas lado a lado no rodapé -->
@@ -2004,11 +2004,11 @@ async function preencherAtletas(){}// placeholder
 function blocoEquipe(equipeNome, atletasPrincipal, atletasVet, lado){
 const l=lado===0?'A':'B';
 
-// Garante mínimo de linhas (10 principal + 7 veteranos)
+// Garante mínimo de linhas (9 principal + 6 veteranos)
 const pRows=[...(atletasPrincipal||[])];
-while(pRows.length<10)pRows.push({});
+while(pRows.length<9)pRows.push({});
 const vRows=[...(atletasVet||[])];
-while(vRows.length<7)vRows.push({});
+while(vRows.length<6)vRows.push({});
 
 // Função auxiliar: linha de atleta
 const makeRow=a=>{
@@ -2019,20 +2019,20 @@ if(exStr){
 const parts=exStr.split('/');
 if(parts.length===3){const d=new Date(+parts[2],+parts[1]-1,+parts[0]);if(d<new Date())exColor='#c0392b';}
 }
-return '<tr style="height:16px;">'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:8.5px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:8.5px;">'+(a.name||'').toUpperCase()+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px 3px;font-size:8.5px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:18px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:14px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:22px;"></td>'
-+'<td style="border:1px solid #ccc;padding:1px;width:30px;"></td>'
+return '<tr style="height:13px;">'
++'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;white-space:nowrap;">'+(a.matricula||'')+'</td>'
++'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;">'+(a.name||'').toUpperCase()+'</td>'
++'<td style="border:1px solid #ccc;padding:0 2px;font-size:8px;text-align:center;color:'+exColor+';">'+exStr+'</td>'
++'<td style="border:1px solid #ccc;width:18px;"></td>'
++'<td style="border:1px solid #ccc;width:13px;"></td>'
++'<td style="border:1px solid #ccc;width:13px;"></td>'
++'<td style="border:1px solid #ccc;width:13px;"></td>'
++'<td style="border:1px solid #ccc;width:13px;"></td>'
++'<td style="border:1px solid #ccc;width:13px;"></td>'
++'<td style="border:1px solid #ccc;width:13px;"></td>'
++'<td style="border:1px solid #ccc;width:22px;"></td>'
++'<td style="border:1px solid #ccc;width:22px;"></td>'
++'<td style="border:1px solid #ccc;width:30px;"></td>'
 +'</tr>';
 };
 
@@ -2190,14 +2190,10 @@ janela.document.write(`<!DOCTYPE html><html><head>
 <title>Súmula – PMFC 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;font-size:10px;color:#000;background:#fff;}
-@page{size:A4 portrait;margin:7mm;}
-@media print{
-.no-print{display:none!important;}
-body{margin:0;}
+body{font-family:Arial,sans-serif;font-size:9px;color:#000;background:#fff;}
+@page{size:A4 portrait;margin:5mm;}
+table{border-collapse:collapse;width:100%;}
 tr{page-break-inside:avoid;}
-}
-table{border-collapse:collapse;}
 </style>
 </head><body>${conteudo}</body></html>`);
 janela.document.close();
