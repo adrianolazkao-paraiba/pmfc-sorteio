@@ -1545,8 +1545,47 @@ tbody.innerHTML=html;
 }
 
 // ── RESET ─────────────────────────────────────────────────────────────
-async function resetVotes(){const all=await fbGetAll('voteLog');await Promise.all(all.map(v=>fbDel('voteLog',v.id)));showModal('Feito','Votos removidos.');}
-async function resetAll(){const [aths,votes]=await Promise.all([fbGetAll('athletes'),fbGetAll('voteLog')]);await Promise.all([...aths.map(a=>fbDel('athletes',a.id)),...votes.map(v=>fbDel('voteLog',v.id))]);showModal('Feito','Reset completo.');}
+async function resetVotes(){
+const all=await fbGetAll('voteLog');
+if(!all.length){showModal('Aviso','Nenhum voto encontrado.');return;}
+showModal('Aguarde...','Removendo '+all.length+' votos...');
+// Processa em lotes de 20 para não travar
+for(let i=0;i<all.length;i+=20){
+await Promise.all(all.slice(i,i+20).map(v=>fbDel('voteLog',v.id)));
+}
+S.voteLog=[];refreshScreens();
+showModal('✅ Feito','Todos os votos removidos.');
+}
+
+async function resetAtletas(){
+const all=await fbGetAll('athletes');
+if(!all.length){showModal('Aviso','Nenhum atleta encontrado.');return;}
+showModal('Aguarde...','Removendo '+all.length+' atletas...');
+for(let i=0;i<all.length;i+=20){
+await Promise.all(all.slice(i,i+20).map(a=>fbDel('athletes',a.id)));
+}
+S.athletes=[];refreshScreens();
+showModal('✅ Feito','Todos os atletas removidos.');
+}
+
+async function resetAll(){
+const [aths,votes,draws]=await Promise.all([
+fbGetAll('athletes'),fbGetAll('voteLog'),fbGetAll('drawResults')
+]);
+const total=aths.length+votes.length+draws.length;
+if(!total){showModal('Aviso','Sistema já está vazio.');return;}
+showModal('Aguarde...','Executando reset completo ('+total+' registros)...');
+const deletar=async(lista,col)=>{
+for(let i=0;i<lista.length;i+=20){
+await Promise.all(lista.slice(i,i+20).map(item=>fbDel(col,item.id)));
+}
+};
+await deletar(aths,'athletes');
+await deletar(votes,'voteLog');
+await deletar(draws,'drawResults');
+S.athletes=[];S.voteLog=[];refreshScreens();
+showModal('✅ Reset Completo','Sistema limpo e pronto para novo campeonato!');
+}
 
 // ── UTILS ─────────────────────────────────────────────────────────────
 function flash(id,msg){const el=document.getElementById(id);el.style.display='block';if(msg)el.textContent=msg;setTimeout(()=>el.style.display='none',3000);}
@@ -2297,11 +2336,6 @@ link.download='escudo_'+team.replace(/\s+/g,'_')+'_'+cat+'.png';
 link.href=canvas.toDataURL('image/png');
 link.click();
 showModal('Download','Escudo da equipe '+team+' baixado! Em breve será possível adicionar escudos personalizados de cada patrocinador.');
-}
-async function resetAtletas(){
-const all=await fbGetAll('athletes');
-await Promise.all(all.map(a=>fbDel('athletes',a.id)));
-showModal('Feito','Todos os atletas foram removidos. Votos e sorteios mantidos.');
 }
 
 // ── ARQUIVAR CAMPEONATO ───────────────────────────────────────────────
