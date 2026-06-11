@@ -197,14 +197,8 @@ tr:hover td{background:#f0f8f0;}
 <!-- BANNER PRAZO -->
 <div id="dash-deadline-banner" style="display:none;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;border:1.5px solid #a8dbb5;margin-bottom:16px;font-size:.85rem;font-weight:600;"></div>
 
-<!-- KPI CARDS -->
-<div id="dash-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:20px;"></div>
-
-<!-- STATUS POR CATEGORIA -->
-<div style="margin-bottom:20px;">
-<div style="font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:2.5px;color:var(--gray-light);margin-bottom:10px;">STATUS POR CATEGORIA</div>
-<div id="dash-cat-status" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
-</div>
+<!-- INFOGRÁFICO DE STATUS -->
+<div id="dash-infografico" style="margin-bottom:20px;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.12);"></div>
 
 <!-- AGENDA + ATIVIDADE -->
 <div class="g2" style="margin-bottom:16px;">
@@ -875,7 +869,6 @@ const end=S.deadline.end?new Date(S.deadline.end):null;
 const idsVotados=new Set(votes.map(v=>v.athleteId));
 const total=aths.length;
 const avaliados=aths.filter(a=>idsVotados.has(a.id)).length;
-const pctGlobal=total?Math.round(avaliados/total*100):0;
 const hoje=now.toISOString().split('T')[0];
 const jogosHoje=TABELA_JOGOS.filter(j=>j.data===hoje);
 
@@ -885,75 +878,172 @@ if(dlBanner){
 if(end){
 const diff=end-now;
 if(diff>0){
-const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000);
+const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000);
 const urgente=diff<86400000;
 dlBanner.style.display='flex';
 dlBanner.style.background=urgente?'linear-gradient(90deg,#fde8e6,#fff)':'linear-gradient(90deg,#eaf6ee,#fff)';
 dlBanner.style.borderColor=urgente?'#f0b0aa':'#a8dbb5';
 dlBanner.style.color=urgente?'#7a1c12':'var(--green-dark)';
-dlBanner.innerHTML=(urgente?'⚠️':'🕐')+' &nbsp;Prazo encerra em <strong>'+(d>0?d+'d ':'')+h+'h'+(d===0?' '+m+'min':'')+'</strong>'+(urgente?' &nbsp;<span style="color:#c0392b;">— atenção!</span>':'');
+dlBanner.innerHTML=(urgente?'⚠️':'🕐')+' &nbsp;Prazo encerra em <strong>'+(d>0?d+'d ':'')+h+'h</strong>'+(urgente?' &nbsp;<span style="color:#c0392b;">— atenção!</span>':'');
 }else{
-dlBanner.style.display='flex';dlBanner.style.background='linear-gradient(90deg,#fde8e6,#fff)';dlBanner.style.borderColor='#f0b0aa';dlBanner.style.color='#7a1c12';
+dlBanner.style.display='flex';dlBanner.style.background='linear-gradient(90deg,#fde8e6,#fff)';
+dlBanner.style.borderColor='#f0b0aa';dlBanner.style.color='#7a1c12';
 dlBanner.innerHTML='🔒 &nbsp;Prazo de votação <strong>encerrado</strong>';
 }
 }else{dlBanner.style.display='none';}
 }
 
-// ── KPI Cards
-const kpiEl=document.getElementById('dash-kpis');
-if(kpiEl){
-const jogosProximos=TABELA_JOGOS.filter(j=>j.data>=hoje).slice(0,1);
-const proxJogo=jogosProximos[0];
-const kpis=[
-{icon:'👥',val:total,sub:'atletas inscritos',color:'var(--green-dark)',bg:'#eaf6ee',border:'#1a6b2f'},
-{icon:'⭐',val:pctGlobal+'%',sub:avaliados+'/'+total+' avaliados',color:'#b8860b',bg:'#fdf8ec',border:'#c9a84c'},
-{icon:'📋',val:votes.length,sub:'votos registrados',color:'var(--green)',bg:'#f0f9f2',border:'#2d8a4e'},
-{icon:'📅',val:jogosHoje.length||'–',sub:jogosHoje.length?'jogo(s) hoje':'próx: '+(proxJogo?proxJogo.data.split('-').reverse().join('/'):'–'),color:'#1d4ed8',bg:'#eff6ff',border:'#3b82f6'},
-];
-kpiEl.innerHTML=kpis.map(k=>
-'<div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid #e8ede8;border-top:3px solid '+k.border+';display:flex;align-items:center;gap:12px;">'
-+'<div style="width:44px;height:44px;border-radius:12px;background:'+k.bg+';display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">'+k.icon+'</div>'
-+'<div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.7rem;line-height:1;color:'+k.color+';">'+k.val+'</div>'
-+'<div style="font-size:.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">'+k.sub+'</div></div>'
-+'</div>'
-).join('');
-}
-
-// ── Category Status Cards
-const catColors={principal:'#1d4ed8',veterano:'#1a6b2f',master:'#b8860b',senior:'#475569'};
-const catBgs={principal:'#eff6ff',veterano:'#eaf6ee',master:'#fdf8ec',senior:'#f8fafc'};
-const catIcons={principal:'⚽',veterano:'🏆',master:'⭐',senior:'👑'};
+// ── INFOGRÁFICO DE STATUS (estilo da imagem de referência)
 const catsVisiveis=(!isAdmin()&&S.user&&S.user.category)?[S.user.category]:CATS;
-const catStatusEl=document.getElementById('dash-cat-status');
-if(catStatusEl){
-catStatusEl.innerHTML=catsVisiveis.map(cat=>{
+const catIcons={principal:'⚽',veterano:'🏆',master:'⭐',senior:'👑'};
+const catColors={principal:'#1d4ed8',veterano:'#1a6b2f',master:'#b8860b',senior:'#475569'};
+
+// Dados por categoria
+const catData=CATS.map(cat=>{
 const catAths=aths.filter(a=>a.category===cat);
 const catVot=catAths.filter(a=>idsVotados.has(a.id)).length;
 const pct=catAths.length?Math.round(catVot/catAths.length*100):0;
-const col=catColors[cat];const bg=catBgs[cat];const ic=catIcons[cat];
-const hasGk=catAths.filter(a=>a.goalkeeper==='sim').length;
-let stTxt,stBg,stCol;
-if(!catAths.length){stTxt='Sem atletas';stBg='#f1f5f9';stCol='#64748b';}
-else if(pct===0){stTxt='Aguardando votos';stBg='#f1f5f9';stCol='#64748b';}
-else if(pct<100){stTxt='Votação em andamento';stBg='#fff8e0';stCol='#7a5c00';}
-else{stTxt='✓ Votação completa';stBg='#d4f0dc';stCol='#1a6b2f';}
-return '<div onclick="openCatDetail(\'' + cat + '\')" style="background:#fff;border-radius:14px;padding:16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:2px solid #e8ede8;transition:all .2s;position:relative;overflow:hidden;"'
-+' onmouseover="this.style.borderColor=\'' + col + '\';this.style.transform=\'translateY(-2px)\';"'
-+' onmouseout="this.style.borderColor=\'#e8ede8\';this.style.transform=\'none\';">'
-+'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+col+';"></div>'
-+'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'
-+'<div><div style="font-size:.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">'+ic+' '+CLBL_SHORT[cat]+'</div>'
-+'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:2rem;line-height:1;color:'+col+';">'+catAths.length+'</div>'
-+'<div style="font-size:.65rem;color:var(--gray);">atletas · '+hasGk+' goleiro(s)</div></div>'
-+'<div style="text-align:right;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;color:'+col+';">'+pct+'%</div>'
-+'<div style="font-size:.62rem;color:var(--gray);">avaliados</div></div>'
+const gk=catAths.filter(a=>a.goalkeeper==='sim').length;
+const semNota=catAths.length-catVot;
+
+// Fase atual
+let fase,faseN,faseBg,faseColor;
+if(!catAths.length){fase='Aguardando';faseN=0;faseBg='#e2e8f0';faseColor='#64748b';}
+else if(pct===0){fase='Inscrição';faseN=1;faseBg='#dbeafe';faseColor='#1d4ed8';}
+else if(pct<100){fase='Votação';faseN=2;faseBg='#fef9c3';faseColor='#b45309';}
+else{fase='Sorteio/Jogo';faseN=3;faseBg='#dcfce7';faseColor='#15803d';}
+
+return {cat,n:catAths.length,pct,gk,semNota,fase,faseN,faseBg,faseColor};
+});
+
+const infogEl=document.getElementById('dash-infografico');
+if(!infogEl)return;
+
+// Número de colunas de categorias
+const nc=catsVisiveis.length;
+const colW=`${100/nc}%`;
+
+let html='<div style="font-family:Arial,sans-serif;">';
+
+// ── HEADER (estilo barra verde escura como no infográfico)
+html+='<div style="background:linear-gradient(135deg,#0d3b1e,#1a6b2f);padding:16px 20px;position:relative;overflow:hidden;">'
++'<div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>'
++'<div style="position:absolute;right:60px;bottom:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.03);"></div>'
++'<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">'
++'<img src="https://www.primeirodemaio.com.br/imagens/logo.png" style="width:44px;height:44px;object-fit:contain;filter:brightness(10);" onerror="this.style.display=\'none\'"/>'
++'<div>'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.5rem;letter-spacing:3px;color:#fff;line-height:1;">CAMPEONATO INTERNO ADULTO 2026</div>'
++'<div style="font-size:.72rem;color:rgba(255,255,255,.65);letter-spacing:2px;text-transform:uppercase;margin-top:2px;">STATUS GERAL POR CATEGORIA</div>'
 +'</div>'
-+'<div style="background:#e8ede8;border-radius:6px;height:5px;margin-bottom:10px;overflow:hidden;">'
-+'<div style="background:'+col+';height:100%;width:'+pct+'%;border-radius:6px;transition:width .8s;"></div></div>'
-+'<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700;background:'+stBg+';color:'+stCol+';">'+stTxt+'</span>'
++'<div style="margin-left:auto;display:flex;gap:20px;flex-wrap:wrap;">'
++'<div style="text-align:center;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.8rem;color:#c9a84c;line-height:1;">'+total+'</div>'
++'<div style="font-size:.62rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">Atletas</div>'
++'</div>'
++'<div style="text-align:center;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.8rem;color:#c9a84c;line-height:1;">'+(total?Math.round(avaliados/total*100):0)+'%</div>'
++'<div style="font-size:.62rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">Votados</div>'
++'</div>'
++'<div style="text-align:center;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.8rem;color:#c9a84c;line-height:1;">'+jogosHoje.length+'</div>'
++'<div style="font-size:.62rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">Hoje</div>'
++'</div>'
++'</div>'
++'</div>'
 +'</div>';
-}).join('');
-}
+
+// ── GRADE (tabela estilo infográfico)
+html+='<div style="background:#fff;">';
+
+// Sub-header de categorias (como SUB-11, SUB-12 do infográfico)
+html+='<div style="display:grid;grid-template-columns:130px repeat('+nc+',1fr);background:#f0faf2;border-bottom:2px solid #1a6b2f;">'
++'<div style="padding:10px;border-right:1px solid #d4e8d4;"></div>';
+catsVisiveis.forEach(cat=>{
+const d=catData.find(x=>x.cat===cat);
+html+='<div onclick="openCatDetail(\''+cat+'\')" style="padding:12px 8px;text-align:center;border-right:1px solid #d4e8d4;cursor:pointer;transition:background .15s;" onmouseover="this.style.background=\'#ddf3e4\'" onmouseout="this.style.background=\'transparent\'">'
++'<div style="font-size:1.4rem;margin-bottom:4px;">'+catIcons[cat]+'</div>'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.95rem;letter-spacing:2px;color:#0d3b1e;">'+CLBL_SHORT[cat].toUpperCase()+'</div>'
++'<div style="font-size:.65rem;color:#64748b;margin-top:2px;">clique para detalhe</div>'
++'</div>';
+});
+html+='</div>';
+
+// ── LINHA 1: ATLETAS INSCRITOS
+html+='<div style="display:grid;grid-template-columns:130px repeat('+nc+',1fr);border-bottom:1px solid #e8f0e8;background:#fff;">'
++'<div style="padding:14px 10px;border-right:1px solid #e8f0e8;display:flex;align-items:center;gap:8px;background:#f8fdf8;">'
++'<span style="font-size:1.1rem;">👥</span>'
++'<div><div style="font-size:.6rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:700;">ATLETAS</div>'
++'<div style="font-size:.6rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;">INSCRITOS</div></div>'
++'</div>';
+catsVisiveis.forEach(cat=>{
+const d=catData.find(x=>x.cat===cat);
+html+='<div style="padding:14px 8px;text-align:center;border-right:1px solid #e8f0e8;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:2rem;color:#0d3b1e;line-height:1;">'+d.n+'</div>'
++'<div style="font-size:.65rem;color:#64748b;margin-top:2px;">'+d.gk+' goleiro(s)</div>'
++'</div>';
+});
+html+='</div>';
+
+// ── LINHA 2: VOTAÇÃO
+html+='<div style="display:grid;grid-template-columns:130px repeat('+nc+',1fr);border-bottom:1px solid #e8f0e8;background:#f9fdf9;">'
++'<div style="padding:14px 10px;border-right:1px solid #e8f0e8;display:flex;align-items:center;gap:8px;background:#f8fdf8;">'
++'<span style="font-size:1.1rem;">⭐</span>'
++'<div><div style="font-size:.6rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:700;">VOTAÇÃO</div>'
++'<div style="font-size:.6rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;">% AVALIADOS</div></div>'
++'</div>';
+catsVisiveis.forEach(cat=>{
+const d=catData.find(x=>x.cat===cat);
+const pctColor=d.pct===100?'#15803d':d.pct>60?'#b45309':'#dc2626';
+html+='<div style="padding:12px 8px;text-align:center;border-right:1px solid #e8f0e8;">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.6rem;color:'+pctColor+';line-height:1;">'+d.pct+'%</div>'
++'<div style="background:#e2e8f0;border-radius:20px;height:6px;margin:6px 8px;overflow:hidden;">'
++'<div style="background:linear-gradient(90deg,'+pctColor+','+pctColor+'99);height:100%;width:'+d.pct+'%;border-radius:20px;transition:width .8s;"></div>'
++'</div>'
++'<div style="font-size:.62rem;color:#64748b;">'+(d.n-d.semNota)+'/'+d.n+'</div>'
++'</div>';
+});
+html+='</div>';
+
+// ── LINHA 3: SEM AVALIAÇÃO (alerta)
+html+='<div style="display:grid;grid-template-columns:130px repeat('+nc+',1fr);border-bottom:2px solid #1a6b2f;background:#fff;">'
++'<div style="padding:14px 10px;border-right:1px solid #e8f0e8;display:flex;align-items:center;gap:8px;background:#f8fdf8;">'
++'<span style="font-size:1.1rem;">⚠️</span>'
++'<div><div style="font-size:.6rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:700;">SEM NOTA</div>'
++'<div style="font-size:.6rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;">PENDENTES</div></div>'
++'</div>';
+catsVisiveis.forEach(cat=>{
+const d=catData.find(x=>x.cat===cat);
+const alertColor=d.semNota===0?'#15803d':'#dc2626';
+html+='<div style="padding:14px 8px;text-align:center;border-right:1px solid #e8f0e8;">'
++(d.semNota===0
+?'<div style="font-size:1.4rem;">✅</div><div style="font-size:.65rem;color:#15803d;font-weight:700;margin-top:2px;">Todos avaliados</div>'
+:'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:2rem;color:#dc2626;line-height:1;">'+d.semNota+'</div>'
++'<div style="font-size:.62rem;color:#dc2626;margin-top:2px;">atleta(s)</div>'
+)
++'</div>';
+});
+html+='</div>';
+
+// ── LINHA INFERIOR: FASE/OBJETIVO (como a linha numerada do infográfico)
+html+='<div style="display:grid;grid-template-columns:130px repeat('+nc+',1fr);">'
++'<div style="padding:14px 10px;background:#0d3b1e;display:flex;align-items:center;gap:8px;">'
++'<span style="font-size:1.1rem;">🎯</span>'
++'<div style="font-size:.6rem;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.5px;font-weight:700;line-height:1.4;">FASE<br/>ATUAL</div>'
++'</div>';
+catsVisiveis.forEach((cat,i)=>{
+const d=catData.find(x=>x.cat===cat);
+// Gradiente de cores como no infográfico (mais claro à medida que progride)
+const bgs=['#1a4d2e','#1a6b2f','#2d8a4e','#3da463'];
+const bg=bgs[Math.min(d.faseN,bgs.length-1)];
+html+='<div style="padding:14px 8px;text-align:center;background:'+bg+';border-left:1px solid rgba(255,255,255,.1);">'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:2rem;color:rgba(255,255,255,.4);line-height:1;">'+(i+1)+'</div>'
++'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.9rem;letter-spacing:2px;color:#fff;margin-top:2px;">'+d.fase.toUpperCase()+'</div>'
++'</div>';
+});
+html+='</div>';
+
+html+='</div></div>';
+infogEl.innerHTML=html;
 
 // ── Agenda de Hoje
 const agendaEl=document.getElementById('dash-agenda');
@@ -962,6 +1052,8 @@ if(!jogosHoje.length){
 const proximos=TABELA_JOGOS.filter(j=>j.data>hoje).slice(0,2);
 if(!proximos.length){agendaEl.innerHTML='<div style="text-align:center;padding:18px;"><div style="font-size:1.8rem;">📭</div><div style="font-size:.8rem;color:var(--gray);margin-top:4px;">Nenhum jogo hoje</div></div>';}
 else{
+const catColors={principal:'#1d4ed8',veterano:'#1a6b2f',master:'#b8860b',senior:'#475569'};
+const catBgs={principal:'#eff6ff',veterano:'#eaf6ee',master:'#fdf8ec',senior:'#f8fafc'};
 agendaEl.innerHTML='<div style="font-size:.7rem;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Próximos jogos:</div>'
 +proximos.map(j=>'<div style="padding:8px 0;border-bottom:1px solid #eaf2ea;">'
 +'<div style="display:flex;justify-content:space-between;align-items:center;">'
@@ -973,6 +1065,8 @@ agendaEl.innerHTML='<div style="font-size:.7rem;color:var(--gray);margin-bottom:
 +'</div>').join('');
 }
 }else{
+const catColors={principal:'#1d4ed8',veterano:'#1a6b2f',master:'#b8860b',senior:'#475569'};
+const catBgs={principal:'#eff6ff',veterano:'#eaf6ee',master:'#fdf8ec',senior:'#f8fafc'};
 agendaEl.innerHTML=jogosHoje.sort((a,b)=>a.hora.localeCompare(b.hora)).map(j=>
 '<div style="padding:9px 0;border-bottom:1px solid #eaf2ea;">'
 +'<div style="display:flex;justify-content:space-between;align-items:center;">'
